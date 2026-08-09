@@ -35,67 +35,46 @@ local function findArceusX()
 end
 
 -- =========================================================
--- ARCEUS X TOGGLE - MINIMAL TECH UI
+-- ARCEUS X TOGGLE
 -- =========================================================
 
-local VISIBLE_URL =
+local VISIBLE_IMAGE =
     "https://raw.githubusercontent.com/XShadow-coder/ArceusXUIToggle/refs/heads/main/IMG_4700.png"
 
-local HIDDEN_URL =
+local HIDDEN_IMAGE =
     "https://raw.githubusercontent.com/XShadow-coder/ArceusXUIToggle/refs/heads/main/IMG_4701.png"
 
 -- =========================================================
--- DOWNLOAD / LOAD IMAGE
+-- DOWNLOAD IMAGE
 -- =========================================================
 
-local function loadImage(url, filename)
-    local filePath = "ArceusXUIToggle/" .. filename
+local function downloadImage(url, fileName)
 
-    local success, data = pcall(function()
-        if isfile(filePath) then
-            return readfile(filePath)
-        end
+    local path = "ArceusXUIToggle/" .. fileName
 
-        local response = request({
-            Url = url,
-            Method = "GET"
-        })
-
-        if response and response.Body then
-            if not isfolder("ArceusXUIToggle") then
-                makefolder("ArceusXUIToggle")
-            end
-
-            writefile(filePath, response.Body)
-            return response.Body
-        end
-    end)
-
-    if not success or not data then
-        return nil
+    if isfile and isfile(path) then
+        return getcustomasset(path)
     end
 
-    local assetFunction =
-        getcustomasset
-        or getsynasset
-
-    if not assetFunction then
-        return nil
+    if not isfolder("ArceusXUIToggle") then
+        makefolder("ArceusXUIToggle")
     end
 
-    local assetSuccess, asset = pcall(function()
-        return assetFunction(filePath)
-    end)
+    local response = request({
+        Url = url,
+        Method = "GET"
+    })
 
-    if assetSuccess then
-        return asset
+    if response and response.Body then
+        writefile(path, response.Body)
+        return getcustomasset(path)
     end
 
     return nil
 end
 
-local visibleImage = loadImage(VISIBLE_URL, "visible.png")
-local hiddenImage = loadImage(HIDDEN_URL, "hidden.png")
+local visibleImage = downloadImage(VISIBLE_IMAGE, "visible.png")
+local hiddenImage = downloadImage(HIDDEN_IMAGE, "hidden.png")
 
 -- =========================================================
 -- CREATE GUI
@@ -106,6 +85,7 @@ toggleGui.Name = "ArceusXVisibilityToggle"
 toggleGui.ResetOnSpawn = false
 toggleGui.IgnoreGuiInset = true
 toggleGui.DisplayOrder = 2147483647
+toggleGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 toggleGui.Parent = targetParent
 
 -- =========================================================
@@ -115,17 +95,16 @@ toggleGui.Parent = targetParent
 local button = Instance.new("ImageButton")
 button.Name = "ToggleButton"
 
--- Small compact size
-button.Size = UDim2.fromOffset(42, 42)
-button.Position = UDim2.fromOffset(18, 110)
+button.Size = UDim2.new(0, 54, 0, 54)
+button.Position = UDim2.new(0, 20, 0, 100)
 
-button.BackgroundColor3 = Color3.fromRGB(10, 13, 17)
-button.BackgroundTransparency = 0.05
+button.BackgroundColor3 = Color3.fromRGB(12, 12, 16)
+button.BackgroundTransparency = 0
 
+button.Image = ""
 button.AutoButtonColor = false
-button.Image = visibleImage or ""
-button.ImageTransparency = 0
 
+button.Active = true
 button.Parent = toggleGui
 
 -- =========================================================
@@ -133,179 +112,117 @@ button.Parent = toggleGui
 -- =========================================================
 
 local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 11)
+corner.CornerRadius = UDim.new(0, 15)
 corner.Parent = button
 
 -- =========================================================
--- IMAGE PADDING
+-- INNER GRADIENT
 -- =========================================================
 
-local padding = Instance.new("UIPadding")
-padding.PaddingTop = UDim.new(0, 5)
-padding.PaddingBottom = UDim.new(0, 5)
-padding.PaddingLeft = UDim.new(0, 5)
-padding.PaddingRight = UDim.new(0, 5)
-padding.Parent = button
+local gradient = Instance.new("UIGradient")
+gradient.Name = "InnerGradient"
+
+gradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(8, 8, 12)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(25, 25, 32)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(8, 8, 12))
+})
+
+gradient.Rotation = 45
+gradient.Parent = button
 
 -- =========================================================
--- TECHNOLOGICAL BORDER
+-- IMAGE
+-- =========================================================
+
+local image = Instance.new("ImageLabel")
+image.Name = "Icon"
+
+image.AnchorPoint = Vector2.new(0.5, 0.5)
+image.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+image.Size = UDim2.new(0, 38, 0, 38)
+
+image.BackgroundTransparency = 1
+image.Image = visibleImage or ""
+image.ScaleType = Enum.ScaleType.Fit
+
+image.ZIndex = 2
+image.Parent = button
+
+local imageCorner = Instance.new("UICorner")
+imageCorner.CornerRadius = UDim.new(0, 11)
+imageCorner.Parent = image
+
+-- =========================================================
+-- BORDER
 -- =========================================================
 
 local stroke = Instance.new("UIStroke")
-stroke.Name = "TechBorder"
-stroke.Thickness = 1.5
+stroke.Name = "Border"
+
+stroke.Thickness = 2
 stroke.Transparency = 0
-stroke.Color = Color3.fromRGB(0, 217, 255)
+stroke.Color = Color3.fromRGB(0, 200, 255)
+
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 stroke.Parent = button
 
 -- =========================================================
--- INNER DARK OVERLAY
+-- NEON EFFECT
 -- =========================================================
 
-local overlay = Instance.new("Frame")
-overlay.Name = "InnerOverlay"
-overlay.Size = UDim2.new(1, -8, 1, -8)
-overlay.Position = UDim2.fromOffset(4, 4)
+local glow = Instance.new("UIStroke")
+glow.Name = "Glow"
 
-overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-overlay.BackgroundTransparency = 0.72
+glow.Thickness = 5
+glow.Transparency = 0.7
+glow.Color = Color3.fromRGB(0, 190, 255)
 
-overlay.BorderSizePixel = 0
-overlay.ZIndex = button.ZIndex + 1
-overlay.Parent = button
-
-local overlayCorner = Instance.new("UICorner")
-overlayCorner.CornerRadius = UDim.new(0, 8)
-overlayCorner.Parent = overlay
-
--- Keep image above overlay
-button.ZIndex = 2
+glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+glow.Parent = button
 
 -- =========================================================
--- SMALL TECH CORNER
--- =========================================================
-
-local cornerMark = Instance.new("Frame")
-cornerMark.Name = "CornerMark"
-cornerMark.Size = UDim2.fromOffset(8, 2)
-cornerMark.Position = UDim2.new(1, -11, 0, 5)
-
-cornerMark.BackgroundColor3 = Color3.fromRGB(0, 217, 255)
-cornerMark.BorderSizePixel = 0
-cornerMark.ZIndex = 5
-cornerMark.Parent = button
-
-local markCorner = Instance.new("UICorner")
-markCorner.CornerRadius = UDim.new(1, 0)
-markCorner.Parent = cornerMark
-
--- =========================================================
--- DRAG SYSTEM
--- =========================================================
-
-local UserInputService = game:GetService("UserInputService")
-
-local dragging = false
-local dragStart
-local startPosition
-local dragMoved = false
-
-button.InputBegan:Connect(function(input)
-
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-
-        dragging = true
-        dragMoved = false
-
-        dragStart = input.Position
-        startPosition = button.Position
-    end
-end)
-
-UserInputService.InputChanged:Connect(function(input)
-
-    if not dragging then
-        return
-    end
-
-    if input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch then
-
-        local delta = input.Position - dragStart
-
-        if math.abs(delta.X) > 5 or math.abs(delta.Y) > 5 then
-            dragMoved = true
-        end
-
-        button.Position = UDim2.new(
-            startPosition.X.Scale,
-            startPosition.X.Offset + delta.X,
-            startPosition.Y.Scale,
-            startPosition.Y.Offset + delta.Y
-        )
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-
-    if input.UserInputType == Enum.UserInputType.MouseButton1
-        or input.UserInputType == Enum.UserInputType.Touch then
-
-        dragging = false
-    end
-end)
-
--- =========================================================
--- TOGGLE STATE
+-- STATE
 -- =========================================================
 
 local hidden = false
 
-local function updateButton()
+local function updateVisual()
 
     if hidden then
 
-        -- Arceus X hidden
-        stroke.Color = Color3.fromRGB(210, 215, 220)
-        stroke.Thickness = 1.2
+        -- Hidden
+        image.Image = hiddenImage or ""
 
-        button.BackgroundColor3 =
-            Color3.fromRGB(16, 16, 18)
+        stroke.Color = Color3.fromRGB(255, 255, 255)
+        stroke.Thickness = 2
+        stroke.Transparency = 0
 
-        button.Image = hiddenImage or ""
-
-        cornerMark.BackgroundColor3 =
-            Color3.fromRGB(210, 215, 220)
+        -- No neon
+        glow.Transparency = 1
 
     else
 
-        -- Arceus X visible
-        stroke.Color = Color3.fromRGB(0, 217, 255)
-        stroke.Thickness = 1.7
+        -- Visible
+        image.Image = visibleImage or ""
 
-        button.BackgroundColor3 =
-            Color3.fromRGB(8, 14, 18)
+        stroke.Color = Color3.fromRGB(0, 200, 255)
+        stroke.Thickness = 2
+        stroke.Transparency = 0
 
-        button.Image = visibleImage or ""
-
-        cornerMark.BackgroundColor3 =
-            Color3.fromRGB(0, 217, 255)
+        -- Neon
+        glow.Color = Color3.fromRGB(0, 200, 255)
+        glow.Thickness = 5
+        glow.Transparency = 0.7
     end
 end
 
 -- =========================================================
--- CLICK
+-- TOGGLE
 -- =========================================================
 
-button.Activated:Connect(function()
-
-    -- Don't toggle if the user was dragging
-    if dragMoved then
-        dragMoved = false
-        return
-    end
+button.MouseButton1Click:Connect(function()
 
     local arceusGui = findArceusX()
 
@@ -317,8 +234,64 @@ button.Activated:Connect(function()
 
     arceusGui.Enabled = not hidden
 
-    updateButton()
+    updateVisual()
 end)
 
+-- =========================================================
+-- MANUAL DRAG
+-- =========================================================
+
+local UserInputService = game:GetService("UserInputService")
+
+local dragging = false
+local dragStart
+local startPosition
+
+button.InputBegan:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        dragging = true
+
+        dragStart = input.Position
+        startPosition = button.Position
+
+        input.Changed:Connect(function()
+
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+
+        end)
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+
+    if not dragging then
+        return
+    end
+
+    if input.UserInputType ~= Enum.UserInputType.MouseMovement
+        and input.UserInputType ~= Enum.UserInputType.Touch then
+        return
+    end
+
+    local delta = input.Position - dragStart
+
+    button.Position = UDim2.new(
+        startPosition.X.Scale,
+        startPosition.X.Offset + delta.X,
+        startPosition.Y.Scale,
+        startPosition.Y.Offset + delta.Y
+    )
+end)
+
+-- =========================================================
+-- INITIAL STATE
+-- =========================================================
+
+updateVisual()
 -- Initial state
 updateButton()
