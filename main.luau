@@ -208,164 +208,135 @@ local hiddenImage = downloadImage(
 
 
 -- =========================================================
+-- ARCEUS X TOGGLE - CLEAN UI
+-- =========================================================
+
+local VISIBLE_IMAGE_URL =
+    "https://raw.githubusercontent.com/XShadow-coder/ArceusXUIToggle/refs/heads/main/IMG_4700.png"
+
+local HIDDEN_IMAGE_URL =
+    "https://raw.githubusercontent.com/XShadow-coder/ArceusXUIToggle/refs/heads/main/IMG_4701.png"
+
+-- =========================================================
+-- DOWNLOAD IMAGE
+-- =========================================================
+
+local function downloadImage(url, filename)
+    local requestFunc = request or http_request
+
+    if not requestFunc then
+        return nil
+    end
+
+    local response = requestFunc({
+        Url = url,
+        Method = "GET"
+    })
+
+    if not response or not response.Body then
+        return nil
+    end
+
+    if not isfile(filename) then
+        writefile(filename, response.Body)
+    end
+
+    local assetFunc = getcustomasset or getsynasset
+
+    if not assetFunc then
+        return nil
+    end
+
+    return assetFunc(filename)
+end
+
+local visibleImage = downloadImage(
+    VISIBLE_IMAGE_URL,
+    "ArceusX_Toggle_Visible.png"
+)
+
+local hiddenImage = downloadImage(
+    HIDDEN_IMAGE_URL,
+    "ArceusX_Toggle_Hidden.png"
+)
+
+-- =========================================================
 -- CREATE GUI
 -- =========================================================
 
 local toggleGui = Instance.new("ScreenGui")
-
 toggleGui.Name = "ArceusXVisibilityToggle"
 toggleGui.ResetOnSpawn = false
 toggleGui.IgnoreGuiInset = true
 toggleGui.DisplayOrder = 2147483647
-
+toggleGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 toggleGui.Parent = targetParent
-
 
 -- =========================================================
 -- BUTTON
 -- =========================================================
 
 local button = Instance.new("ImageButton")
-
 button.Name = "ToggleButton"
 
--- Smaller
-button.Size = UDim2.fromOffset(36, 36)
+button.Size = UDim2.fromOffset(58, 58)
+button.Position = UDim2.fromOffset(20, 100)
 
-button.Position = UDim2.new(0, 20, 0, 100)
-
-button.BackgroundColor3 = Color3.fromRGB(10, 12, 15)
+button.BackgroundColor3 = Color3.fromRGB(10, 14, 18)
 button.BackgroundTransparency = 0.08
 
-button.BorderSizePixel = 0
-
-button.Image = ""
 button.AutoButtonColor = false
+button.Image = visibleImage or ""
+button.ImageTransparency = 0
 
 button.Active = true
-button.Draggable = true
-
 button.Parent = toggleGui
 
-
 -- =========================================================
--- ROUND CORNERS
+-- ROUNDED CORNERS
 -- =========================================================
 
 local corner = Instance.new("UICorner")
-
-corner.CornerRadius = UDim.new(0, 10)
-
+corner.CornerRadius = UDim.new(0, 14)
 corner.Parent = button
 
-
 -- =========================================================
--- IMAGE
--- =========================================================
-
-local image = Instance.new("ImageLabel")
-
-image.Name = "StateImage"
-
-image.AnchorPoint = Vector2.new(0.5, 0.5)
-image.Position = UDim2.fromScale(0.5, 0.5)
-
-image.Size = UDim2.fromScale(0.78, 0.78)
-
-image.BackgroundTransparency = 1
-
-image.ImageTransparency = 0
-
-image.ScaleType = Enum.ScaleType.Fit
-
-image.Parent = button
-
-
-local imageCorner = Instance.new("UICorner")
-
-imageCorner.CornerRadius = UDim.new(0, 7)
-
-imageCorner.Parent = image
-
-
--- =========================================================
--- SUBTLE INNER DARK OVERLAY
+-- INNER IMAGE PADDING
 -- =========================================================
 
-local overlay = Instance.new("Frame")
-
-overlay.Name = "Overlay"
-
-overlay.AnchorPoint = Vector2.new(0.5, 0.5)
-overlay.Position = UDim2.fromScale(0.5, 0.5)
-
-overlay.Size = UDim2.fromScale(0.78, 0.78)
-
-overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-
-overlay.BackgroundTransparency = 0.78
-
-overlay.BorderSizePixel = 0
-
-overlay.ZIndex = image.ZIndex + 1
-
-overlay.Parent = button
-
-
-local overlayCorner = Instance.new("UICorner")
-
-overlayCorner.CornerRadius = UDim.new(0, 7)
-
-overlayCorner.Parent = overlay
-
+local imagePadding = Instance.new("UIPadding")
+imagePadding.PaddingTop = UDim.new(0, 6)
+imagePadding.PaddingBottom = UDim.new(0, 6)
+imagePadding.PaddingLeft = UDim.new(0, 6)
+imagePadding.PaddingRight = UDim.new(0, 6)
+imagePadding.Parent = button
 
 -- =========================================================
 -- BORDER
 -- =========================================================
 
 local stroke = Instance.new("UIStroke")
-
-stroke.Name = "Border"
-
-stroke.Thickness = 1.4
-
+stroke.Name = "StatusStroke"
+stroke.Thickness = 2
 stroke.Transparency = 0
-
 stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
 stroke.Parent = button
 
-
 -- =========================================================
--- SUBTLE GLOW
--- =========================================================
-
-local glow = Instance.new("UIStroke")
-
-glow.Name = "Glow"
-
-glow.Thickness = 3
-
-glow.Transparency = 0.85
-
-glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-
-glow.Parent = button
-
-
--- =========================================================
--- SCALE
+-- SUBTLE INNER SHADING
 -- =========================================================
 
--- Used for click animation.
--- This prevents the button from changing its actual position.
-
-local uiScale = Instance.new("UIScale")
-
-uiScale.Scale = 1
-
-uiScale.Parent = button
-
+local gradient = Instance.new("UIGradient")
+gradient.Rotation = 135
+gradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 32, 40)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(7, 10, 13))
+})
+gradient.Transparency = NumberSequence.new({
+    NumberSequenceKeypoint.new(0, 0.05),
+    NumberSequenceKeypoint.new(1, 0.25)
+})
+gradient.Parent = button
 
 -- =========================================================
 -- STATE
@@ -373,212 +344,56 @@ uiScale.Parent = button
 
 local hidden = false
 
+local ACTIVE_COLOR = Color3.fromRGB(0, 210, 255)
+local INACTIVE_COLOR = Color3.fromRGB(205, 210, 215)
 
--- =========================================================
--- COLORS
--- =========================================================
-
-local CYAN = Color3.fromRGB(0, 200, 255)
-local WHITE = Color3.fromRGB(255, 255, 255)
-
-local DARK_VISIBLE = Color3.fromRGB(8, 15, 19)
-local DARK_HIDDEN = Color3.fromRGB(13, 13, 15)
-
-
--- =========================================================
--- TWEEN SETTINGS
--- =========================================================
-
-local smoothTween =
-    TweenInfo.new(
-        0.25,
-        Enum.EasingStyle.Quad,
-        Enum.EasingDirection.Out
-    )
-
-local clickTween =
-    TweenInfo.new(
-        0.08,
-        Enum.EasingStyle.Quad,
-        Enum.EasingDirection.Out
-    )
-
-
--- =========================================================
--- UPDATE UI
--- =========================================================
-
-local function updateToggleUI()
-
+local function updateToggleAppearance()
     if hidden then
 
-        -- =================================================
-        -- HIDDEN
-        -- =================================================
+        -- OFF / HIDDEN
+        button.Image = hiddenImage or ""
+        button.BackgroundColor3 = Color3.fromRGB(12, 14, 16)
 
-        if hiddenImage then
-            image.Image = hiddenImage
-        end
+        stroke.Color = INACTIVE_COLOR
+        stroke.Thickness = 1.5
+        stroke.Transparency = 0.15
 
-        TweenService:Create(
-            button,
-            smoothTween,
-            {
-                BackgroundColor3 = DARK_HIDDEN
-            }
-        ):Play()
-
-        TweenService:Create(
-            stroke,
-            smoothTween,
-            {
-                Color = WHITE,
-                Thickness = 1.4,
-                Transparency = 0
-            }
-        ):Play()
-
-        TweenService:Create(
-            glow,
-            smoothTween,
-            {
-                Color = WHITE,
-                Thickness = 3,
-                Transparency = 1
-            }
-        ):Play()
+        gradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(
+                0,
+                Color3.fromRGB(28, 28, 30)
+            ),
+            ColorSequenceKeypoint.new(
+                1,
+                Color3.fromRGB(7, 8, 9)
+            )
+        })
 
     else
 
-        -- =================================================
-        -- VISIBLE
-        -- =================================================
+        -- ON / VISIBLE
+        button.Image = visibleImage or ""
+        button.BackgroundColor3 = Color3.fromRGB(7, 18, 24)
 
-        if visibleImage then
-            image.Image = visibleImage
-        end
+        stroke.Color = ACTIVE_COLOR
+        stroke.Thickness = 2.2
+        stroke.Transparency = 0
 
-        TweenService:Create(
-            button,
-            smoothTween,
-            {
-                BackgroundColor3 = DARK_VISIBLE
-            }
-        ):Play()
-
-        TweenService:Create(
-            stroke,
-            smoothTween,
-            {
-                Color = CYAN,
-                Thickness = 1.4,
-                Transparency = 0
-            }
-        ):Play()
-
-        TweenService:Create(
-            glow,
-            smoothTween,
-            {
-                Color = CYAN,
-                Thickness = 3,
-                Transparency = 0.84
-            }
-        ):Play()
+        gradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(
+                0,
+                Color3.fromRGB(15, 45, 55)
+            ),
+            ColorSequenceKeypoint.new(
+                1,
+                Color3.fromRGB(5, 13, 18)
+            )
+        })
 
     end
 end
 
-
--- =========================================================
--- MINIMAL NEON ANIMATION
--- =========================================================
-
-task.spawn(function()
-
-    while toggleGui.Parent do
-
-        if not hidden then
-
-            -- Very subtle increase
-            TweenService:Create(
-                glow,
-                TweenInfo.new(
-                    1.8,
-                    Enum.EasingStyle.Sine,
-                    Enum.EasingDirection.InOut
-                ),
-                {
-                    Transparency = 0.72
-                }
-            ):Play()
-
-            task.wait(1.8)
-
-            if hidden then
-                continue
-            end
-
-            -- Very subtle decrease
-            TweenService:Create(
-                glow,
-                TweenInfo.new(
-                    1.8,
-                    Enum.EasingStyle.Sine,
-                    Enum.EasingDirection.InOut
-                ),
-                {
-                    Transparency = 0.88
-                }
-            ):Play()
-
-            task.wait(1.8)
-
-        else
-
-            task.wait(0.2)
-
-        end
-    end
-end)
-
-
--- =========================================================
--- INITIAL STATE
--- =========================================================
-
-updateToggleUI()
-
-
--- =========================================================
--- PRESS ANIMATION
--- =========================================================
-
-button.MouseButton1Down:Connect(function()
-
-    TweenService:Create(
-        uiScale,
-        clickTween,
-        {
-            Scale = 0.90
-        }
-    ):Play()
-
-end)
-
-
-button.MouseButton1Up:Connect(function()
-
-    TweenService:Create(
-        uiScale,
-        clickTween,
-        {
-            Scale = 1
-        }
-    ):Play()
-
-end)
-
+updateToggleAppearance()
 
 -- =========================================================
 -- TOGGLE
@@ -589,7 +404,6 @@ button.MouseButton1Click:Connect(function()
     local arceusGui = findArceusX()
 
     if not arceusGui then
-        warn("Arceus X Not Found")
         return
     end
 
@@ -597,18 +411,64 @@ button.MouseButton1Click:Connect(function()
 
     arceusGui.Enabled = not hidden
 
-    updateToggleUI()
-
+    updateToggleAppearance()
 end)
 
-
 -- =========================================================
--- CLEANUP
+-- CUSTOM DRAG
+-- Prevents the button from jumping when clicked
 -- =========================================================
 
-toggleGui.Destroying:Connect(function()
+local UserInputService = game:GetService("UserInputService")
 
-    -- Stop references cleanly
-    hidden = true
+local dragging = false
+local dragStart
+local startPosition
+local dragInput
+
+local function updateDrag(input)
+    local delta = input.Position - dragStart
+
+    button.Position = UDim2.new(
+        startPosition.X.Scale,
+        startPosition.X.Offset + delta.X,
+        startPosition.Y.Scale,
+        startPosition.Y.Offset + delta.Y
+    )
+end
+
+button.InputBegan:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        dragging = true
+        dragStart = input.Position
+        startPosition = button.Position
+
+        input.Changed:Connect(function()
+
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+
+        end)
+    end
+end)
+
+button.InputChanged:Connect(function(input)
+
+    if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+
+    if input == dragInput and dragging then
+        updateDrag(input)
+    end
 
 end)
