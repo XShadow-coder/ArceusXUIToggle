@@ -35,6 +35,17 @@ local function findArceusX()
 end
 
 -- =========================================================
+-- IMAGE URLS
+-- =========================================================
+
+local VISIBLE_IMAGE_URL =
+    "https://raw.githubusercontent.com/XShadow-coder/ArceusXUIToggle/refs/heads/main/IMG_4700.png"
+
+local HIDDEN_IMAGE_URL =
+    "https://raw.githubusercontent.com/XShadow-coder/ArceusXUIToggle/refs/heads/main/IMG_4701.png"
+
+
+-- =========================================================
 -- CREATE TOGGLE
 -- =========================================================
 
@@ -45,40 +56,136 @@ toggleGui.IgnoreGuiInset = true
 toggleGui.DisplayOrder = 2147483647
 toggleGui.Parent = targetParent
 
-local button = Instance.new("TextButton")
+
+-- Main button
+local button = Instance.new("ImageButton")
 button.Name = "ToggleButton"
-button.Size = UDim2.new(0, 145, 0, 45)
+
+button.Size = UDim2.new(0, 55, 0, 55)
 button.Position = UDim2.new(0, 20, 0, 100)
 
-button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-button.BackgroundTransparency = 0.1
+button.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+button.BackgroundTransparency = 0.05
 
-button.TextColor3 = Color3.fromRGB(255, 255, 255)
-button.TextSize = 14
-button.Font = Enum.Font.GothamBold
-button.Text = "Hide Arceus X"
+button.AutoButtonColor = false
+button.Image = ""
 
 button.Active = true
 button.Draggable = true
 
 button.Parent = toggleGui
 
+
+-- Rounded corners
 local corner = Instance.new("UICorner")
-corner.CornerRadius = UDim.new(0, 8)
+corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = button
+
+
+-- =========================================================
+-- IMAGE
+-- =========================================================
+
+local image = Instance.new("ImageLabel")
+image.Name = "StateImage"
+
+image.Size = UDim2.new(1, -8, 1, -8)
+image.Position = UDim2.new(0, 4, 0, 4)
+
+image.BackgroundTransparency = 1
+image.ImageTransparency = 0
+
+image.ScaleType = Enum.ScaleType.Fit
+
+image.Parent = button
+
+
+local imageCorner = Instance.new("UICorner")
+imageCorner.CornerRadius = UDim.new(0, 9)
+imageCorner.Parent = image
+
+
+-- =========================================================
+-- BORDER
+-- =========================================================
+
+local stroke = Instance.new("UIStroke")
+stroke.Name = "StateStroke"
+
+stroke.Thickness = 2
+stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+stroke.Parent = button
+
+
+-- =========================================================
+-- NEON GLOW
+-- =========================================================
+
+local glow = Instance.new("UIStroke")
+glow.Name = "NeonGlow"
+
+glow.Thickness = 5
+glow.Transparency = 0.65
+
+glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+glow.Parent = button
+
+
+-- =========================================================
+-- STATE
+-- =========================================================
+
+local hidden = false
+
+
+local function setVisibleStyle()
+
+    -- Cyan neon
+    stroke.Color = Color3.fromRGB(0, 200, 255)
+    stroke.Thickness = 2
+    stroke.Transparency = 0
+
+    glow.Color = Color3.fromRGB(0, 200, 255)
+    glow.Thickness = 5
+    glow.Transparency = 0.65
+
+    button.BackgroundColor3 = Color3.fromRGB(8, 14, 18)
+
+end
+
+
+local function setHiddenStyle()
+
+    -- White, no neon
+    stroke.Color = Color3.fromRGB(255, 255, 255)
+    stroke.Thickness = 2
+    stroke.Transparency = 0
+
+    glow.Transparency = 1
+
+    button.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+
+end
+
+
+-- =========================================================
+-- INITIAL STATE
+-- =========================================================
+
+setVisibleStyle()
+
 
 -- =========================================================
 -- TOGGLE
 -- =========================================================
-
-local hidden = false
 
 button.MouseButton1Click:Connect(function()
 
     local arceusGui = findArceusX()
 
     if not arceusGui then
-        button.Text = "Arceus X Not Found"
         return
     end
 
@@ -87,10 +194,14 @@ button.MouseButton1Click:Connect(function()
     arceusGui.Enabled = not hidden
 
     if hidden then
-        button.Text = "Show Arceus X"
-        button.BackgroundColor3 = Color3.fromRGB(140, 40, 40)
+
+        -- Arceus X hidden
+        setHiddenStyle()
+
     else
-        button.Text = "Hide Arceus X"
-        button.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+
+        -- Arceus X visible
+        setVisibleStyle()
+
     end
 end)
